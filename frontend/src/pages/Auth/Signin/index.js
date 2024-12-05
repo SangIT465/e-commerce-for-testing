@@ -16,14 +16,13 @@ import {
 } from "@chakra-ui/react";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import biểu tượng từ react-icons
 import { useFormik } from "formik";
-import validationSchema from "./validations";
-import { fetchLogin } from "../../../api";
+import validationSchema from "./validations"; // Validation Schema
+import { fetchLogin } from "../../../api"; // API gọi Login
 import { useAuth } from "../../../contexts/AuthContext";
-import { Link as RouterLink } from "react-router-dom"; // Import RouterLink từ react-router-dom : npm install react-router-dom
+import { Link as RouterLink } from "react-router-dom"; // Router Link
 
 function Signin({ history }) {
   const { login } = useAuth();
-  const [showErrorIndicator, setShowErrorIndicator] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const formik = useFormik({
@@ -31,23 +30,19 @@ function Signin({ history }) {
       email: "",
       password: "",
     },
-    validationSchema,
+    validationSchema, // Sử dụng schema để kiểm tra
     onSubmit: async (values, bag) => {
-      if (!values.email || !values.password) {
-        setShowErrorIndicator(true);
-      } else {
-        setShowErrorIndicator(false);
-      }
-
       try {
         const loginResponse = await fetchLogin({
           email: values.email,
           password: values.password,
         });
         login(loginResponse);
-        history.push("/profile");
+        history.push("/profile"); // Chuyển hướng khi đăng nhập thành công
       } catch (e) {
-        bag.setErrors({ general: e.response.data.message });
+        const errorMessage =
+          e.response?.data?.message || "Email hoặc mật khẩu không hợp lệ.";
+        bag.setErrors({ general: errorMessage });
       }
     },
   });
@@ -66,10 +61,13 @@ function Signin({ history }) {
           </Box>
           <Box my={5} textAlign="left">
             <form onSubmit={formik.handleSubmit}>
-              <FormControl isInvalid={formik.touched.email && formik.errors.email}>
+              {/* Trường Email */}
+              <FormControl
+                isInvalid={formik.touched.email && formik.errors.email}
+              >
                 <FormLabel>
                   E-mail
-                  {showErrorIndicator && !formik.values.email && (
+                  {formik.touched.email && formik.errors.email && (
                     <Text as="span" color="red.500">
                       *
                     </Text>
@@ -84,10 +82,14 @@ function Signin({ history }) {
                 <FormErrorMessage>{formik.errors.email}</FormErrorMessage>
               </FormControl>
 
-              <FormControl mt="4" isInvalid={formik.touched.password && formik.errors.password}>
+              {/* Trường Mật khẩu */}
+              <FormControl
+                mt="4"
+                isInvalid={formik.touched.password && formik.errors.password}
+              >
                 <FormLabel>
                   Password
-                  {showErrorIndicator && !formik.values.password && (
+                  {formik.touched.password && formik.errors.password && (
                     <Text as="span" color="red.500">
                       *
                     </Text>
@@ -119,12 +121,14 @@ function Signin({ history }) {
                 <FormErrorMessage>{formik.errors.password}</FormErrorMessage>
               </FormControl>
 
+              {/* Liên kết Quên mật khẩu */}
               <Box mt={2} textAlign="right">
                 <Link as={RouterLink} to="/forgot-password" color="teal.500">
                   Quên mật khẩu?
                 </Link>
               </Box>
 
+              {/* Nút Đăng nhập */}
               <Button mt="4" width="full" type="submit">
                 Sign In
               </Button>
